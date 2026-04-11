@@ -21,24 +21,12 @@ Install these tools before running the project:
 
 This project was created with Flutter `stable` and uses Dart SDK constraint `^3.10.7`.
 
-## Recommended Setup
-
-1. Install Flutter and add it to your system `PATH`.
-2. Run:
-
-```bash
-flutter doctor
-```
-
-3. Install any missing Android toolchain components shown by `flutter doctor`.
-4. Connect an Android phone with USB debugging enabled, or start an Android emulator from Android Studio.
-
 ## Clone And Run
 
 Clone the repository:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+git clone https://github.com/asmasaeed18as/quizlet-flutter-project.git
 cd mad
 ```
 
@@ -72,23 +60,6 @@ To reinstall all Dart and Flutter packages at any time:
 ```bash
 flutter pub get
 ```
-
-## Git-Ignored Files
-
-Some files are intentionally not pushed to GitHub because they are generated locally or contain machine-specific paths.
-
-Examples:
-
-- `.dart_tool/`
-- `build/`
-- `.idea/`
-- `*.iml`
-- `flutter_*.log`
-- `android/local.properties`
-- `ios/Flutter/ephemeral/`
-- `macos/Flutter/ephemeral/`
-
-These files are not missing project files. They are recreated on each developer machine.
 
 ## Important Note About `android/local.properties`
 
@@ -167,33 +138,6 @@ Try this order:
 4. Make sure an emulator or phone is connected
 5. Run `flutter run`
 
-## What Should Be On GitHub
-
-These should be committed:
-
-- `lib/`
-- `assets/`
-- `test/`
-- `android/`
-- `ios/`
-- `web/`
-- `windows/`
-- `linux/`
-- `macos/`
-- `pubspec.yaml`
-- `pubspec.lock`
-- `analysis_options.yaml`
-- `.metadata`
-- `README.md`
-
-These should not be committed:
-
-- `build/`
-- `.dart_tool/`
-- IDE-specific temporary files
-- local SDK path files
-- generated logs
-- generated ephemeral folders
 
 ## Default Entry Point
 
