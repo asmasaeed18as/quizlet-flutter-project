@@ -1,252 +1,124 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  @override
   Widget build(BuildContext context) {
-    const background = Color(0xFFF5EDE4);
-    const primaryBlue = Color(0xFF4F46E5);
-    const hintTextColor = Color(0xFF9CA3AF);
-
     return Scaffold(
-      backgroundColor: background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back Button
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Title
-              const Text(
-                'Hello! Register To Get\nStarted',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 32),
-
-              // Username Field
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Username',
-                  hintStyle: const TextStyle(
-                    color: hintTextColor,
-                    fontSize: 14,
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 18,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Email / Phone Field
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Enter your email and Phone no.',
-                  hintStyle: const TextStyle(
-                    color: hintTextColor,
-                    fontSize: 14,
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 18,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Password Field
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Enter your password',
-                  hintStyle: const TextStyle(
-                    color: hintTextColor,
-                    fontSize: 14,
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  suffixIcon: const Icon(
-                    Icons.visibility_off_outlined,
-                    color: hintTextColor,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 18,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Confirm Password Field
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Confirm Password',
-                  hintStyle: const TextStyle(
-                    color: hintTextColor,
-                    fontSize: 14,
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  suffixIcon: const Icon(
-                    Icons.visibility_off_outlined,
-                    color: hintTextColor,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 18,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Register Button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryBlue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: const Text(
-                    'Register',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Divider
-              Row(
-                children: const [
-                  Expanded(child: Divider(thickness: 1, color: Colors.black26)),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      'Or Register with',
-                      style: TextStyle(fontSize: 13, color: Colors.black54),
-                    ),
-                  ),
-                  Expanded(child: Divider(thickness: 1, color: Colors.black26)),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Social Buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildSocialButton(
-                    const Icon(Icons.facebook, color: Color(0xFF1877F2)),
-                  ),
-                  _buildSocialButton(
-                    const Text(
-                      'G',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.red,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/login_bg.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+          Positioned.fill(
+            child: Container(
+              color: const Color(0xA6F3F7FF),
+            ),
+          ),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 460),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 7, sigmaY: 7),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              IconButton.filledTonal(
+                                onPressed: () => Navigator.pop(context),
+                                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Create Account',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Join and start tracking your quiz performance.',
+                                style: TextStyle(color: Color(0xFF4A5568)),
+                              ),
+                              const SizedBox(height: 18),
+                              _field('Username', Icons.person_outline),
+                              const SizedBox(height: 12),
+                              _field('Email', Icons.mail_outline),
+                              const SizedBox(height: 12),
+                              _field('Password', Icons.lock_outline, obscure: true),
+                              const SizedBox(height: 12),
+                              _field(
+                                'Confirm Password',
+                                Icons.lock_person_outlined,
+                                obscure: true,
+                              ),
+                              const SizedBox(height: 20),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    if (_formKey.currentState?.validate() ?? false) {
+                                      Navigator.pop(context);
+                                    }
+                                  },
+                                  child: const Text('Register'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  _buildSocialButton(
-                    const Icon(Icons.apple, color: Colors.black),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 40),
-
-              // Bottom Text
-              Center(
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: const Text.rich(
-                    TextSpan(
-                      style: TextStyle(color: Colors.black87, fontSize: 13),
-                      children: [
-                        TextSpan(text: 'Already have an account? '),
-                        TextSpan(
-                          text: 'Login Now',
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  // Helper widget kept strictly inside this file
-  Widget _buildSocialButton(Widget child) {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+  Widget _field(String label, IconData icon, {bool obscure = false}) {
+    return TextFormField(
+      obscureText: obscure,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
       ),
-      child: Center(child: child),
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return '$label is required.';
+        }
+        return null;
+      },
     );
   }
 }

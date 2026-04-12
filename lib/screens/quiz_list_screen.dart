@@ -1,88 +1,141 @@
 import 'package:flutter/material.dart';
+import '../data/quiz_data.dart';
+import '../theme/app_theme.dart';
 import 'quiz_screen.dart';
 
-class QuizListScreen extends StatefulWidget {
+class QuizListScreen extends StatelessWidget {
   final String category;
 
   const QuizListScreen({super.key, required this.category});
 
   @override
-  State<QuizListScreen> createState() => _QuizListScreenState();
+  Widget build(BuildContext context) {
+    final questions = QuizData.forCategory(category);
+
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppTheme.screenGradient),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: questions.isEmpty
+                ? const Center(
+                    child: Text('No quiz available for this category.'),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      IconButton.filledTonal(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                      ),
+                      const SizedBox(height: 10),
+                      Hero(
+                        tag: category,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: Text(
+                            '$category Quiz',
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'You have ${questions.length} MCQs in this category.',
+                        style: const TextStyle(color: Color(0xFF4A5568)),
+                      ),
+                      const SizedBox(height: 20),
+                      Expanded(
+                        child: Card(
+                          margin: EdgeInsets.zero,
+                          child: Padding(
+                            padding: const EdgeInsets.all(18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _InfoRow(
+                                  icon: Icons.timer_outlined,
+                                  label: 'Estimated time',
+                                  value: '${questions.length * 2} min',
+                                ),
+                                const SizedBox(height: 12),
+                                _InfoRow(
+                                  icon: Icons.help_outline_rounded,
+                                  label: 'Questions',
+                                  value: '${questions.length}',
+                                ),
+                                const SizedBox(height: 12),
+                                const _InfoRow(
+                                  icon: Icons.assignment_turned_in_outlined,
+                                  label: 'Format',
+                                  value: 'Multiple Choice',
+                                ),
+                                const Spacer(),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              QuizScreen(category: category),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.play_arrow_rounded),
+                                    label: const Text('Start Quiz'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _QuizListScreenState extends State<QuizListScreen>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<Offset> _slideAnimation;
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final quizzes = ["Algebra Test", "Physics Quiz", "Grammar Test"];
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Hero(
-              tag: widget.category,
-              child: Material(
-                type: MaterialType.transparency,
-                child: Text(
-                  widget.category,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+    return Row(
+      children: [
+        Icon(icon, color: AppTheme.primary),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: AppTheme.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(width: 8),
-            const Text('Quizzes'),
-          ],
+          ),
         ),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: ListView.builder(
-        itemCount: quizzes.length,
-        itemBuilder: (context, index) {
-          return SlideTransition(
-            position: _slideAnimation,
-            child: ListTile(
-              leading: const Icon(Icons.quiz),
-              title: Text(quizzes[index]),
-              trailing: ElevatedButton(
-                child: const Text("Start"),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const QuizScreen()),
-                  );
-                },
-              ),
-            ),
-          );
-        },
-      ),
+        Text(
+          value,
+          style: const TextStyle(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
     );
   }
 }

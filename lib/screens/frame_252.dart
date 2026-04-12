@@ -1,5 +1,5 @@
-// lib/screens/frame_252.dart
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import 'intro1_screen.dart';
 
 class Frame252Screen extends StatelessWidget {
@@ -7,47 +7,50 @@ class Frame252Screen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const background = Color(0xFFF5EDE4);
-
     return Scaffold(
-      backgroundColor: background,
       body: GestureDetector(
         onTap: () {
-          // Tap anywhere → go to Intro1
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const Intro1Screen()),
           );
         },
-        child: const SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Logo placeholder – replace with Image.asset later
-                CircleAvatar(
-                  radius: 60,
-                  backgroundColor: Colors.redAccent,
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.blueAccent,
-                  ),
+        child: Container(
+          decoration: const BoxDecoration(gradient: AppTheme.screenGradient),
+          child: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        'assets/images/image1.png',
+                        width: 140,
+                        height: 140,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    const Text(
+                      'LLM Based Quiz Generator',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Tap to continue',
+                      style: TextStyle(color: Color(0xFF4A5568)),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 24),
-                Text(
-                  'LLM BASED QUIZ GENERATOR',
-                  style: TextStyle(
-                    fontSize: 16,
-                    letterSpacing: 1.4,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 32),
-                Text(
-                  'Tap to continue',
-                  style: TextStyle(color: Colors.black54),
-                ),
-              ],
+              ),
             ),
           ),
         ),

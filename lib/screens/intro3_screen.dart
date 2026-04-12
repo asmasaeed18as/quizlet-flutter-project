@@ -1,108 +1,89 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
+import 'intro_widgets.dart';
 import 'login_screen.dart';
-import 'intro_widgets.dart'; // Dots & NextButton
 
 class Intro3Screen extends StatelessWidget {
   const Intro3Screen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const background = Color(0xFFF5EDE4);
-
     return Scaffold(
-      backgroundColor: background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Skip Button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
-                    },
-                    child: const Text('Skip'),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 8),
-
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Image placeholder
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(24),
-                      child: Image.asset(
-                        'assets/images/quiz_paper.png',
-                        height: 220,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          height: 220,
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade200,
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          alignment: Alignment.center,
-                          child: const Text(
-                            'Quiz paper image',
-                            style: TextStyle(color: Colors.white),
+      body: Container(
+        decoration: const BoxDecoration(gradient: AppTheme.screenGradient),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight - 28),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => const LoginScreen()),
+                            );
+                          },
+                          child: const Text('Skip'),
+                        ),
+                      ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 10,
+                          child: Image.asset(
+                            'assets/images/quiz_paper.png',
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    const Text(
-                      'Test Your Knowledge\nWith QUIZLET',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
+                      const SizedBox(height: 22),
+                      const Text(
+                        'Test Your Knowledge',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.textPrimary,
+                        ),
                       ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    const Text(
-                      'Quizlet is the best app to challenge\nyourself and your friends.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14, color: Colors.black54),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Dots(activeIndex: 2),
-
-                  NextButton(
-                    onPressed: () {
-                      // FINAL → Go to Login Screen
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
-                    },
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Get instant feedback, review results, and continue improving in every category.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Color(0xFF4A5568),
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Dots(activeIndex: 2),
+                          NextButton(
+                            isFinal: true,
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ],
+                ),
+              );
+            },
           ),
         ),
       ),

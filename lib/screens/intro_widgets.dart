@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 class Dots extends StatelessWidget {
   final int activeIndex;
+
   const Dots({super.key, required this.activeIndex});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: List.generate(3, (index) {
-        return Container(
+        final isActive = activeIndex == index;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
           margin: const EdgeInsets.only(right: 6),
-          width: activeIndex == index ? 18 : 6,
-          height: 6,
+          width: isActive ? 22 : 8,
+          height: 8,
           decoration: BoxDecoration(
-            color: activeIndex == index
-                ? Colors.deepPurple
-                : Colors.grey.shade400,
-            borderRadius: BorderRadius.circular(10),
+            color: isActive ? AppTheme.primary : const Color(0xFFD1D9EA),
+            borderRadius: BorderRadius.circular(999),
           ),
         );
       }),
@@ -26,18 +28,19 @@ class Dots extends StatelessWidget {
 
 class NextButton extends StatelessWidget {
   final VoidCallback onPressed;
-  const NextButton({super.key, required this.onPressed});
+  final bool isFinal;
+
+  const NextButton({super.key, required this.onPressed, this.isFinal = false});
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        shape: const CircleBorder(),
-        backgroundColor: Colors.deepPurple,
-        padding: const EdgeInsets.all(18),
+        minimumSize: const Size(54, 54),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      child: const Icon(Icons.arrow_forward, color: Colors.white),
+      child: Icon(isFinal ? Icons.check_rounded : Icons.arrow_forward_rounded),
     );
   }
 }
