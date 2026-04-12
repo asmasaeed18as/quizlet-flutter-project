@@ -30,13 +30,23 @@ class HomeScreen extends StatelessWidget {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const QuizListScreen()),
+            MaterialPageRoute(builder: (_) => QuizListScreen(category: title)),
           );
         },
         child: Center(
-          child: Text(title,
-              style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          child: Hero(
+            tag: title,
+            child: Material(
+              type: MaterialType.transparency,
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

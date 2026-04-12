@@ -3,8 +3,37 @@ import 'intro2_screen.dart';
 import 'login_screen.dart';
 import 'intro_widgets.dart';
 
-class Intro1Screen extends StatelessWidget {
+class Intro1Screen extends StatefulWidget {
   const Intro1Screen({super.key});
+
+  @override
+  State<Intro1Screen> createState() => _Intro1ScreenState();
+}
+
+class _Intro1ScreenState extends State<Intro1Screen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +56,13 @@ class Intro1Screen extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            const Text(
-              "Welcome to QUIZLET",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: const Text(
+                "Welcome to QUIZLET",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
             ),
             const SizedBox(height: 10),
             const Text(
@@ -46,13 +78,12 @@ class Intro1Screen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const Intro2Screen()),
+                      MaterialPageRoute(builder: (_) => const Intro2Screen()),
                     );
                   },
-                )
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),

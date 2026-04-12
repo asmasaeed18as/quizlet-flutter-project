@@ -8,7 +8,7 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
-  int selected = -1;
+  int? selected;
 
   @override
   Widget build(BuildContext context) {
@@ -23,31 +23,65 @@ class _QuizScreenState extends State<QuizScreen> {
           children: [
             const LinearProgressIndicator(value: 0.5),
             const SizedBox(height: 20),
-            const Text(
-              "What is 5 + 5?",
-              style: TextStyle(fontSize: 18),
-            ),
-            RadioListTile(
-              value: 0,
+            const Text("What is 5 + 5?", style: TextStyle(fontSize: 18)),
+            RadioGroup<int>(
               groupValue: selected,
-              onChanged: (value) {
-                setState(() => selected = value!);
-              },
-              title: const Text("8"),
-            ),
-            RadioListTile(
-              value: 1,
-              groupValue: selected,
-              onChanged: (value) {
-                setState(() => selected = value!);
-              },
-              title: const Text("10"),
+              onChanged: (value) => setState(() => selected = value),
+              child: Column(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    padding: EdgeInsets.all(selected == 0 ? 12 : 8),
+                    decoration: BoxDecoration(
+                      color: selected == 0
+                          ? Colors.deepPurple.shade50
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: RadioListTile<int>(value: 0, title: const Text("8")),
+                  ),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    padding: EdgeInsets.all(selected == 1 ? 12 : 8),
+                    decoration: BoxDecoration(
+                      color: selected == 1
+                          ? Colors.deepPurple.shade50
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: RadioListTile<int>(
+                      value: 1,
+                      title: const Text("10"),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const Spacer(),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                final screenContext = context;
+                showDialog(
+                  context: screenContext,
+                  builder: (dialogContext) => AlertDialog(
+                    title: const Text('Quiz Submitted'),
+                    content: const Text('Your answer has been submitted.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(dialogContext);
+                          Navigator.pop(screenContext);
+                        },
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              },
               child: const Text("Submit"),
-            )
+            ),
           ],
         ),
       ),

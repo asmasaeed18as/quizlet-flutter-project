@@ -17,7 +17,6 @@ class Intro3Screen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-
               // Skip Button
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -26,9 +25,7 @@ class Intro3Screen extends StatelessWidget {
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const LoginScreen(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
                       );
                     },
                     child: const Text('Skip'),
@@ -42,18 +39,26 @@ class Intro3Screen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-
                     // Image placeholder
-                    Container(
-                      height: 220,
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade200,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        'Quiz paper image',
-                        style: TextStyle(color: Colors.white),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        'assets/images/quiz_paper.png',
+                        height: 220,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 220,
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade200,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'Quiz paper image',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
                       ),
                     ),
 
@@ -73,10 +78,7 @@ class Intro3Screen extends StatelessWidget {
                     const Text(
                       'Quizlet is the best app to challenge\nyourself and your friends.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.black54),
                     ),
                   ],
                 ),
@@ -94,9 +96,7 @@ class Intro3Screen extends StatelessWidget {
                       // FINAL → Go to Login Screen
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const LoginScreen(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
                       );
                     },
                   ),

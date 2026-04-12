@@ -43,10 +43,16 @@ class RegisterScreen extends StatelessWidget {
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Username',
-                  hintStyle: const TextStyle(color: hintTextColor, fontSize: 14),
+                  hintStyle: const TextStyle(
+                    color: hintTextColor,
+                    fontSize: 14,
+                  ),
                   filled: true,
                   fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 18,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -59,10 +65,16 @@ class RegisterScreen extends StatelessWidget {
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Enter your email and Phone no.',
-                  hintStyle: const TextStyle(color: hintTextColor, fontSize: 14),
+                  hintStyle: const TextStyle(
+                    color: hintTextColor,
+                    fontSize: 14,
+                  ),
                   filled: true,
                   fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 18,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -76,11 +88,20 @@ class RegisterScreen extends StatelessWidget {
                 obscureText: true,
                 decoration: InputDecoration(
                   hintText: 'Enter your password',
-                  hintStyle: const TextStyle(color: hintTextColor, fontSize: 14),
+                  hintStyle: const TextStyle(
+                    color: hintTextColor,
+                    fontSize: 14,
+                  ),
                   filled: true,
                   fillColor: Colors.white,
-                  suffixIcon: const Icon(Icons.visibility_off_outlined, color: hintTextColor),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                  suffixIcon: const Icon(
+                    Icons.visibility_off_outlined,
+                    color: hintTextColor,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 18,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -94,11 +115,20 @@ class RegisterScreen extends StatelessWidget {
                 obscureText: true,
                 decoration: InputDecoration(
                   hintText: 'Confirm Password',
-                  hintStyle: const TextStyle(color: hintTextColor, fontSize: 14),
+                  hintStyle: const TextStyle(
+                    color: hintTextColor,
+                    fontSize: 14,
+                  ),
                   filled: true,
                   fillColor: Colors.white,
-                  suffixIcon: const Icon(Icons.visibility_off_outlined, color: hintTextColor),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                  suffixIcon: const Icon(
+                    Icons.visibility_off_outlined,
+                    color: hintTextColor,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 18,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -115,11 +145,17 @@ class RegisterScreen extends StatelessWidget {
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryBlue,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   child: const Text(
                     'Register',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -131,7 +167,10 @@ class RegisterScreen extends StatelessWidget {
                   Expanded(child: Divider(thickness: 1, color: Colors.black26)),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text('Or Register with', style: TextStyle(fontSize: 13, color: Colors.black54)),
+                    child: Text(
+                      'Or Register with',
+                      style: TextStyle(fontSize: 13, color: Colors.black54),
+                    ),
                   ),
                   Expanded(child: Divider(thickness: 1, color: Colors.black26)),
                 ],
@@ -142,9 +181,22 @@ class RegisterScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildSocialButton(const Icon(Icons.facebook, color: Color(0xFF1877F2))),
-                  _buildSocialButton(const Text('G', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.red))),
-                  _buildSocialButton(const Icon(Icons.apple, color: Colors.black)),
+                  _buildSocialButton(
+                    const Icon(Icons.facebook, color: Color(0xFF1877F2)),
+                  ),
+                  _buildSocialButton(
+                    const Text(
+                      'G',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                  _buildSocialButton(
+                    const Icon(Icons.apple, color: Colors.black),
+                  ),
                 ],
               ),
               const SizedBox(height: 40),
@@ -160,7 +212,10 @@ class RegisterScreen extends StatelessWidget {
                         TextSpan(text: 'Already have an account? '),
                         TextSpan(
                           text: 'Login Now',
-                          style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
@@ -185,7 +240,7 @@ class RegisterScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
