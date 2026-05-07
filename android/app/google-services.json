@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "635255404794",
+    "project_id": "quizlet-app-123",
+    "storage_bucket": "quizlet-app-123.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:635255404794:android:bbd8969eae76d088507143",
+        "android_client_info": {
+          "package_name": "com.example.mad"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "635255404794-vjl3rhskp8hon9a5h0virfd1aiuu1q4o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mad",
+            "certificate_hash": "dfc0ee7f0cddc50101bff271f25c1744c475730f"
+          }
+        },
+        {
+          "client_id": "635255404794-hsi4v8jthcfs0daal15sa4plh81fv1oc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAm2nfxcrm1GjtCmVIMo_XHDGEZsLejXCU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "635255404794-hsi4v8jthcfs0daal15sa4plh81fv1oc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "635255404794-pa61bkkavum4j5771sofl88tbv4nu6no.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mad"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,8 +1,11 @@
 import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../main.dart';
+import '../services/firestore_service.dart';
 import '../theme/app_theme.dart';
-import 'home_screen.dart';
 import 'register_screen.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +18,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
+  bool _isLoading = false;
 
   static final RegExp _emailRegex = RegExp(
     r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$',
@@ -159,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: () {},
+                                onPressed: _isLoading ? null : _onForgotPassword,
                                 child: const Text('Forgot Password?'),
                               ),
                             ),
@@ -167,8 +172,20 @@ class _LoginScreenState extends State<LoginScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: _onLoginPressed,
-                                child: const Text('Login'),
+                                onPressed: _isLoading ? null : _onLoginPressed,
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.4,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        ),
+                                      )
+                                    : const Text('Login'),
                               ),
                             ),
                             const SizedBox(height: 18),
@@ -186,22 +203,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               ],
                             ),
                             const SizedBox(height: 14),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: const [
-                                _SocialChip(
-                                  icon: Icons.facebook,
-                                  color: Color(0xFF1877F2),
-                                ),
-                                _SocialChip(
-                                  icon: Icons.g_mobiledata_rounded,
-                                  color: Color(0xFFDB4437),
-                                ),
-                                _SocialChip(
-                                  icon: Icons.apple,
-                                  color: Colors.black,
-                                ),
-                              ],
+                            Center(
+                              child: _SocialChip(
+                                icon: Icons.g_mobiledata_rounded,
+                                color: const Color(0xFFDB4437),
+                                onTap: _isLoading ? null : signInWithGoogle,
+                              ),
                             ),
                             const SizedBox(height: 20),
                             Center(
@@ -245,7 +252,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _onLoginPressed() {
+  Future<void> _onLoginPressed() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) {
       setState(() {
@@ -254,16 +261,191 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const HomeScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 350),
-      ),
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      final user = credential.user;
+      if (user != null) {
+        await FirestoreService.instance.ensureUserProfile(user);
+      }
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const AuthGate(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 350),
+        ),
+      );
+    } on FirebaseAuthException catch (error) {
+      if (!mounted) return;
+      _showMessage(_friendlyLoginError(error));
+    } catch (error) {
+      if (!mounted) return;
+      _showMessage(
+        'Login failed after authentication. Check Firestore setup. Error: $error',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> signInWithGoogle() async {
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Clear any cached Google session so the user is asked to authenticate.
+      await _googleSignIn.signOut();
+
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) return;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      if (googleAuth.idToken == null) {
+        _showMessage(
+          'Google authentication did not return an ID token. Check your Firebase and Google Sign-In setup.',
+        );
+        return;
+      }
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+
+      final user = userCredential.user;
+      if (user == null) {
+        _showMessage('Google sign-in failed. Please try again.');
+        return;
+      }
+
+      await FirestoreService.instance.ensureUserProfile(user);
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AuthGate()),
+      );
+    } on FirebaseAuthException catch (error) {
+      if (!mounted) return;
+      _showMessage(_friendlyLoginError(error));
+    } catch (error) {
+      if (!mounted) return;
+      _showMessage(
+        'Google sign-in failed. Error: $error',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  String _friendlyLoginError(FirebaseAuthException error) {
+    switch (error.code) {
+      case 'invalid-email':
+        return 'That email address is not valid.';
+      case 'invalid-credential':
+      case 'user-not-found':
+      case 'wrong-password':
+        return 'Incorrect email or password.';
+      case 'user-disabled':
+        return 'This account has been disabled.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please try again in a moment.';
+      case 'network-request-failed':
+        return 'Network error. Check your internet connection and try again.';
+      default:
+        return error.message ?? 'Login failed. Please try again.';
+    }
+  }
+
+  Future<void> _onForgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      _showMessage('Enter your email address first.');
+      return;
+    }
+
+    if (!_emailRegex.hasMatch(email)) {
+      _showMessage('Enter a valid email address to reset your password.');
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (!mounted) return;
+      _showMessage('Password reset email sent. Check your inbox.');
+    } on FirebaseAuthException catch (error) {
+      if (!mounted) return;
+      _showMessage(_friendlyPasswordResetError(error));
+    } catch (_) {
+      if (!mounted) return;
+      _showMessage('Could not send reset email. Please try again.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  String _friendlyPasswordResetError(FirebaseAuthException error) {
+    switch (error.code) {
+      case 'invalid-email':
+        return 'That email address is not valid.';
+      case 'missing-android-pkg-name':
+      case 'missing-continue-uri':
+      case 'missing-ios-bundle-id':
+      case 'invalid-continue-uri':
+      case 'unauthorized-continue-uri':
+        return 'Password reset is not configured correctly in Firebase.';
+      case 'user-not-found':
+        return 'No account was found for this email address.';
+      case 'network-request-failed':
+        return 'Network error. Check your internet connection and try again.';
+      default:
+        return error.message ?? 'Could not send reset email.';
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(behavior: SnackBarBehavior.floating, content: Text(message)),
     );
   }
 }
@@ -271,20 +453,25 @@ class _LoginScreenState extends State<LoginScreen> {
 class _SocialChip extends StatelessWidget {
   final IconData icon;
   final Color color;
+  final VoidCallback? onTap;
 
-  const _SocialChip({required this.icon, required this.color});
+  const _SocialChip({required this.icon, required this.color, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 52,
-      height: 52,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5EAF4)),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE5EAF4)),
+        ),
+        child: Icon(icon, color: color, size: 28),
       ),
-      child: Icon(icon, color: color, size: 28),
     );
   }
 }

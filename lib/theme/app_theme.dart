@@ -15,8 +15,21 @@ class AppTheme {
     colors: [Color(0xFFEFF3FF), Color(0xFFF9FCFF), Color(0xFFEFF8FF)],
   );
 
+  static LinearGradient backgroundGradient(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    if (isDark) {
+      return const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF101729), Color(0xFF18223A), Color(0xFF0D1322)],
+      );
+    }
+
+    return screenGradient;
+  }
+
   static ThemeData lightTheme() {
-    return ThemeData(
+    return _theme(
       useMaterial3: true,
       scaffoldBackgroundColor: surface,
       colorScheme: ColorScheme.fromSeed(
@@ -24,24 +37,58 @@ class AppTheme {
         primary: primary,
         secondary: secondary,
       ),
+      brightness: Brightness.light,
+    );
+  }
+
+  static ThemeData darkTheme() {
+    return _theme(
+      useMaterial3: true,
+      scaffoldBackgroundColor: const Color(0xFF0D1322),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: secondary,
+        brightness: Brightness.dark,
+        primary: secondary,
+        secondary: accent,
+      ),
+      brightness: Brightness.dark,
+    );
+  }
+
+  static ThemeData _theme({
+    required bool useMaterial3,
+    required Color scaffoldBackgroundColor,
+    required ColorScheme colorScheme,
+    required Brightness brightness,
+  }) {
+    final isDark = brightness == Brightness.dark;
+
+    return ThemeData(
+      useMaterial3: useMaterial3,
+      brightness: brightness,
+      scaffoldBackgroundColor: scaffoldBackgroundColor,
+      colorScheme: colorScheme,
       textTheme: const TextTheme(
         headlineMedium: TextStyle(
           fontWeight: FontWeight.w800,
           color: textPrimary,
-          letterSpacing: -0.5,
+          letterSpacing: 0,
         ),
         titleLarge: TextStyle(fontWeight: FontWeight.w700, color: textPrimary),
         bodyMedium: TextStyle(color: Color(0xFF4A5568)),
+      ).apply(
+        bodyColor: isDark ? const Color(0xFFE8EEF8) : textPrimary,
+        displayColor: isDark ? Colors.white : textPrimary,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: textPrimary,
+        foregroundColor: isDark ? Colors.white : textPrimary,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: isDark ? const Color(0xFF18223A) : Colors.white,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
@@ -61,7 +108,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primary,
+          backgroundColor: colorScheme.primary,
           foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
@@ -71,7 +118,7 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF18223A) : Colors.white,
         elevation: 6,
         shadowColor: const Color(0x220B1B3F),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),

@@ -1,0 +1,26 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "quizlet-app-123",
+          "appId": "1:635255404794:android:bbd8969eae76d088507143",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "quizlet-app-123",
+          "configurations": {
+            "android": "1:635255404794:android:bbd8969eae76d088507143",
+            "ios": "1:635255404794:ios:8d199088275fb74d507143",
+            "web": "1:635255404794:web:53b08e8f650e8ce6507143"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}

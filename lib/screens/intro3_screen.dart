@@ -17,7 +17,9 @@ class Intro3Screen extends StatelessWidget {
               return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight - 28),
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight - 28,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -27,7 +29,9 @@ class Intro3Screen extends StatelessWidget {
                           onPressed: () {
                             Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(builder: (_) => const LoginScreen()),
+                              MaterialPageRoute(
+                                builder: (_) => const LoginScreen(),
+                              ),
                             );
                           },
                           child: const Text('Skip'),
@@ -73,7 +77,9 @@ class Intro3Screen extends StatelessWidget {
                             onPressed: () {
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
                               );
                             },
                           ),
