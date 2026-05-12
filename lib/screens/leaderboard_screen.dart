@@ -132,7 +132,7 @@ class _CourseLeaderboardState extends State<_CourseLeaderboard> {
         return Column(
           children: [
             DropdownButtonFormField<String>(
-              value: selectedCourseId,
+              initialValue: selectedCourseId,
               decoration: const InputDecoration(labelText: 'Course'),
               items: [
                 for (final course in courses)
@@ -149,35 +149,56 @@ class _CourseLeaderboardState extends State<_CourseLeaderboard> {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: StreamBuilder<List<QuizAttempt>>(
-                stream:
-                    FirestoreService.instance.attemptsForCourse(selectedCourseId),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) return ErrorState(error: snapshot.error);
-                  if (!snapshot.hasData) {
+              child: StreamBuilder<Set<String>>(
+                stream: FirestoreService.instance.adminUserIdsStream(),
+                builder: (context, adminSnapshot) {
+                  if (adminSnapshot.hasError) {
+                    return ErrorState(error: adminSnapshot.error);
+                  }
+                  if (!adminSnapshot.hasData) {
                     return const LoadingState(message: 'Loading course ranking...');
                   }
 
-                  final entries = _rankCourseAttempts(snapshot.data!);
-                  if (entries.isEmpty) {
-                    return const EmptyState(
-                      icon: Icons.leaderboard_outlined,
-                      title: 'No course scores yet',
-                      message: 'Complete a quiz in this course to rank here.',
-                    );
-                  }
+                  final adminUserIds = adminSnapshot.data!;
 
-                  return ListView.separated(
-                    itemCount: entries.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemBuilder: (context, index) {
-                      final entry = entries[index];
-                      return _RankTile(
-                        rank: index + 1,
-                        name: entry.name,
-                        photoUrl: entry.photoUrl,
-                        score: entry.score,
-                        detail: '${entry.attempts} attempts',
+                  return StreamBuilder<List<QuizAttempt>>(
+                    stream:
+                        FirestoreService.instance.attemptsForCourse(selectedCourseId),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return ErrorState(error: snapshot.error);
+                      }
+                      if (!snapshot.hasData) {
+                        return const LoadingState(
+                          message: 'Loading course ranking...',
+                        );
+                      }
+
+                      final userAttempts = snapshot.data!
+                          .where((attempt) => !adminUserIds.contains(attempt.userId))
+                          .toList();
+                      final entries = _rankCourseAttempts(userAttempts);
+                      if (entries.isEmpty) {
+                        return const EmptyState(
+                          icon: Icons.leaderboard_outlined,
+                          title: 'No course scores yet',
+                          message: 'Complete a quiz in this course to rank here.',
+                        );
+                      }
+
+                      return ListView.separated(
+                        itemCount: entries.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final entry = entries[index];
+                          return _RankTile(
+                            rank: index + 1,
+                            name: entry.name,
+                            photoUrl: entry.photoUrl,
+                            score: entry.score,
+                            detail: '${entry.attempts} attempts',
+                          );
+                        },
                       );
                     },
                   );

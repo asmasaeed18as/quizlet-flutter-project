@@ -6,6 +6,10 @@ class Quiz {
   final String title;
   final int totalQuestions;
   final int duration;
+  final String password;
+  final DateTime? startsAt;
+  final bool isPublished;
+  final bool isAdminGenerated;
 
   const Quiz({
     required this.id,
@@ -13,10 +17,15 @@ class Quiz {
     required this.title,
     required this.totalQuestions,
     required this.duration,
+    required this.password,
+    required this.startsAt,
+    required this.isPublished,
+    required this.isAdminGenerated,
   });
 
   factory Quiz.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
+    final startsAtValue = data['startsAt'];
 
     return Quiz(
       id: data['id']?.toString() ?? doc.id,
@@ -24,6 +33,10 @@ class Quiz {
       title: data['title']?.toString() ?? 'Untitled quiz',
       totalQuestions: (data['totalQuestions'] as num?)?.toInt() ?? 0,
       duration: (data['duration'] as num?)?.toInt() ?? 10,
+      password: data['password']?.toString() ?? '',
+      startsAt: startsAtValue is Timestamp ? startsAtValue.toDate() : null,
+      isPublished: data['isPublished'] as bool? ?? true,
+      isAdminGenerated: data['isAdminGenerated'] as bool? ?? true,
     );
   }
 
@@ -34,6 +47,18 @@ class Quiz {
       'title': title,
       'totalQuestions': totalQuestions,
       'duration': duration,
+      'password': password,
+      'startsAt': startsAt,
+      'isPublished': isPublished,
+      'isAdminGenerated': isAdminGenerated,
     };
+  }
+
+  bool get requiresPassword => password.trim().isNotEmpty;
+
+  bool get hasStarted {
+    final startsAtValue = startsAt;
+    if (startsAtValue == null) return true;
+    return !DateTime.now().isBefore(startsAtValue);
   }
 }

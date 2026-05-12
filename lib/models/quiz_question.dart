@@ -7,6 +7,10 @@ class QuizQuestion {
   final List<String> options;
   final String correctAnswer;
   final String explanation;
+  final String difficulty;
+  final bool isPracticeVariant;
+  final String practiceVariantLabel;
+  final String source;
 
   const QuizQuestion({
     required this.id,
@@ -15,6 +19,10 @@ class QuizQuestion {
     required this.options,
     required this.correctAnswer,
     required this.explanation,
+    required this.difficulty,
+    required this.isPracticeVariant,
+    required this.practiceVariantLabel,
+    this.source = 'manual',
   });
 
   factory QuizQuestion.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -30,6 +38,10 @@ class QuizQuestion {
       options: options,
       correctAnswer: data['correctAnswer']?.toString() ?? '',
       explanation: data['explanation']?.toString() ?? '',
+      difficulty: data['difficulty']?.toString() ?? 'medium',
+      isPracticeVariant: data['isPracticeVariant'] as bool? ?? false,
+      practiceVariantLabel: data['practiceVariantLabel']?.toString() ?? '',
+      source: data['source']?.toString() ?? 'manual',
     );
   }
 
@@ -41,7 +53,27 @@ class QuizQuestion {
       'options': options,
       'correctAnswer': correctAnswer,
       'explanation': explanation,
+      'difficulty': difficulty,
+      'isPracticeVariant': isPracticeVariant,
+      'practiceVariantLabel': practiceVariantLabel,
+      'source': source,
     };
+  }
+
+  bool get isInternetImported => source == 'internet';
+  bool get isSeededSample => source == 'sample';
+
+  String get sourceLabel {
+    switch (source) {
+      case 'internet':
+        return 'Internet Import';
+      case 'sample':
+        return isPracticeVariant && practiceVariantLabel.isNotEmpty
+            ? 'Sample $practiceVariantLabel'
+            : 'Sample Content';
+      default:
+        return 'Manual';
+    }
   }
 
   int get correctOptionIndex {

@@ -1,9 +1,9 @@
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../main.dart';
 import '../services/firestore_service.dart';
 import '../theme/app_theme.dart';
+import '../main.dart';
 import 'register_screen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -211,6 +211,27 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             const SizedBox(height: 20),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _isLoading
+                                    ? null
+                                    : () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const AdminLoginScreen(),
+                                          ),
+                                        );
+                                      },
+                                icon: const Icon(
+                                  Icons.admin_panel_settings_rounded,
+                                ),
+                                label: const Text('Open Admin Panel Login'),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
                             Center(
                               child: GestureDetector(
                                 onTap: () {
@@ -441,6 +462,177 @@ class _LoginScreenState extends State<LoginScreen> {
       default:
         return error.message ?? 'Could not send reset email.';
     }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(behavior: SnackBarBehavior.floating, content: Text(message)),
+    );
+  }
+}
+
+class AdminLoginScreen extends StatefulWidget {
+  const AdminLoginScreen({super.key});
+
+  @override
+  State<AdminLoginScreen> createState() => _AdminLoginScreenState();
+}
+
+class _AdminLoginScreenState extends State<AdminLoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Admin Panel Login')),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 460),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Separate admin access',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Only accounts granted the admin role can add courses, subjects, quizzes, and MCQs.',
+                    ),
+                    const SizedBox(height: 18),
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'Admin email',
+                        hintText: 'Enter admin email',
+                        prefixIcon: Icon(Icons.mail_outline),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Admin password',
+                        hintText: 'Enter admin password',
+                        prefixIcon: Icon(Icons.lock_outline),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isLoading ? null : _login,
+                        icon: _isLoading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Icon(Icons.login_rounded),
+                        label: const Text('Login as Admin'),
+                      ),
+                    ),
+                    const Text(
+                      'Only users with admin access in Firestore can open this panel.',
+                      style: TextStyle(color: Color(0xFF4A5568)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _login() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      final user = credential.user;
+      if (user != null) {
+        await FirestoreService.instance.ensureUserProfile(user);
+        final isAdmin = await FirestoreService.instance.isAdminUser(user.uid);
+        if (!isAdmin) {
+          await FirebaseAuth.instance.signOut();
+          throw FirebaseAuthException(
+            code: 'insufficient-permission',
+            message: 'This account does not have admin access.',
+          );
+        }
+      }
+
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const AuthGate()),
+        (route) => false,
+      );
+    } on FirebaseAuthException catch (error) {
+      if (!mounted) return;
+      _showMessage(_friendlyAdminError(error));
+    } on FirebaseException catch (error) {
+      if (!mounted) return;
+      _showMessage(_friendlyAdminFirestoreError(error));
+    } catch (error) {
+      if (!mounted) return;
+      _showMessage('Admin login failed: $error');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  String _friendlyAdminError(FirebaseAuthException error) {
+    switch (error.code) {
+      case 'invalid-email':
+        return 'Admin email is not valid.';
+      case 'invalid-credential':
+      case 'user-not-found':
+      case 'wrong-password':
+        return 'Admin credentials are incorrect.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please try again in a moment.';
+      case 'network-request-failed':
+        return 'Network error. Check your internet connection and try again.';
+      case 'insufficient-permission':
+        return 'This account is signed in, but it has not been granted admin access in Firestore.';
+      default:
+        return error.message ?? 'Admin access failed.';
+    }
+  }
+
+  String _friendlyAdminFirestoreError(FirebaseException error) {
+    if (error.code == 'permission-denied') {
+      return 'Admin login is blocked by Firestore rules. Deploy your latest firestore.rules and make sure this user document has role set to admin.';
+    }
+    return error.message ?? 'Could not verify admin access.';
   }
 
   void _showMessage(String message) {

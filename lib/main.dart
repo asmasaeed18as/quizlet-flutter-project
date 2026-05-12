@@ -3,12 +3,45 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'firebase_options.dart';
+import 'models/app_user.dart';
+import 'services/firestore_service.dart';
+import 'screens/admin_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Material(
+      color: const Color(0xFF101729),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'App error',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                details.exceptionAsString(),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  };
 
   Object? firebaseError;
 
@@ -57,10 +90,63 @@ class AuthGate extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
-          return const HomeScreen();
+          return _RoleGate(user: snapshot.data!);
         }
 
-        return const SplashScreen();
+        return const LoginScreen();
+      },
+    );
+  }
+}
+
+class _RoleGate extends StatelessWidget {
+  final User user;
+
+  const _RoleGate({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<AppUser?>(
+      stream: FirestoreService.instance.userStream(user.uid),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final appUser = snapshot.data;
+        if (appUser == null) {
+          return FutureBuilder<void>(
+            future: FirestoreService.instance.ensureUserProfile(user),
+            builder: (context, ensureSnapshot) {
+              if (ensureSnapshot.connectionState != ConnectionState.done) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (ensureSnapshot.hasError) {
+                return Scaffold(
+                  body: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        'Could not load your profile: ${ensureSnapshot.error}',
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            },
+          );
+        }
+
+        return appUser.isAdmin ? const AdminScreen() : const HomeScreen();
       },
     );
   }

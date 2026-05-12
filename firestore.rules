@@ -10,48 +10,67 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
+    function isAdmin() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     match /users/{userId} {
       allow read: if signedIn();
-      allow create, update: if owns(userId);
+      allow create: if owns(userId)
+        && request.resource.data.id == request.auth.uid
+        && request.resource.data.role == 'user';
+      allow update: if owns(userId)
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.role == resource.data.role;
     }
 
     match /courses/{courseId} {
       allow read: if signedIn();
-      allow create, update, delete: if signedIn();
+      allow create, update, delete: if isAdmin();
     }
 
     match /subjects/{subjectId} {
       allow read: if signedIn();
-      allow create, update, delete: if signedIn();
+      allow create, update, delete: if isAdmin();
     }
 
     match /quizzes/{quizId} {
       allow read: if signedIn();
-      allow create, update, delete: if signedIn();
+      allow create, update, delete: if isAdmin();
     }
 
     match /questions/{questionId} {
       allow read: if signedIn();
-      allow create, update, delete: if signedIn();
+      allow create, update, delete: if isAdmin();
     }
 
     match /attempts/{attemptId} {
       allow read: if signedIn();
       allow create: if signedIn()
         && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
     }
 
     match /progress/{progressId} {
-      allow read, delete: if signedIn()
+      allow get: if signedIn()
+        && (resource == null || resource.data.userId == request.auth.uid);
+      allow list: if signedIn()
         && resource.data.userId == request.auth.uid;
-      allow create, update: if signedIn()
+      allow delete: if isAdmin() || signedIn()
+        && (resource == null || resource.data.userId == request.auth.uid);
+      allow create, update: if isAdmin() || signedIn()
         && request.resource.data.userId == request.auth.uid;
     }
 
     match /bookmarks/{bookmarkId} {
-      allow read, delete: if signedIn()
+      allow get: if signedIn()
+        && (resource == null || resource.data.userId == request.auth.uid);
+      allow list: if signedIn()
         && resource.data.userId == request.auth.uid;
-      allow create, update: if signedIn()
+      allow delete: if isAdmin() || signedIn()
+        && (resource == null || resource.data.userId == request.auth.uid);
+      allow create, update: if isAdmin() || signedIn()
         && request.resource.data.userId == request.auth.uid;
     }
   }

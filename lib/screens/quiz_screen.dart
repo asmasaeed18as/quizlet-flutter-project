@@ -15,12 +15,18 @@ class QuizScreen extends StatefulWidget {
   final Quiz quiz;
   final String courseId;
   final String subjectId;
+  final int? questionLimit;
+  final int? durationMinutes;
+  final String difficulty;
 
   const QuizScreen({
     super.key,
     required this.quiz,
     required this.courseId,
     required this.subjectId,
+    this.questionLimit,
+    this.durationMinutes,
+    this.difficulty = 'any',
   });
 
   @override
@@ -58,7 +64,16 @@ class _QuizScreenState extends State<QuizScreen> {
         throw StateError('Please sign in before starting a quiz.');
       }
 
-      final questions = await _service.questionsForQuiz(widget.quiz.id).first;
+      final allQuestions = await _service.questionsForQuiz(widget.quiz.id).first;
+      final difficultyFiltered = widget.difficulty == 'any'
+          ? allQuestions
+          : allQuestions
+              .where((question) => question.difficulty == widget.difficulty)
+              .toList();
+      final requestedLimit = widget.questionLimit ?? difficultyFiltered.length;
+      final questions = difficultyFiltered.take(requestedLimit).toList();
+      final minutes =
+          widget.durationMinutes ?? (widget.quiz.duration <= 0 ? 10 : widget.quiz.duration);
       final progress = await _service.getProgress(
         userId: _user.uid,
         quizId: widget.quiz.id,
@@ -82,8 +97,7 @@ class _QuizScreenState extends State<QuizScreen> {
         _questions = questions;
         _selectedAnswers = selectedAnswers;
         _currentIndex = boundedIndex;
-        _remainingSeconds =
-            (widget.quiz.duration <= 0 ? 10 : widget.quiz.duration) * 60;
+        _remainingSeconds = minutes * 60;
         _isLoading = false;
       });
 
@@ -203,10 +217,67 @@ class _QuizScreenState extends State<QuizScreen> {
                     padding: const EdgeInsets.all(18),
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 220),
-                      child: Text(
-                        currentQuestion.questionText,
+                      child: Column(
                         key: ValueKey(currentQuestion.id),
-                        style: Theme.of(context).textTheme.titleLarge,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (currentQuestion.sourceLabel.isNotEmpty) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .secondaryContainer,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                currentQuestion.sourceLabel,
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSecondaryContainer,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                          if (currentQuestion.isPracticeVariant) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primaryContainer,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                currentQuestion.practiceVariantLabel.isEmpty
+                                    ? 'Practice Variant'
+                                    : currentQuestion.practiceVariantLabel,
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimaryContainer,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                          Text(
+                            currentQuestion.questionText,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -234,15 +305,35 @@ class _QuizScreenState extends State<QuizScreen> {
                             width: selected ? 1.8 : 1.0,
                           ),
                         ),
-                        child: RadioListTile<int>(
-                          value: optionIndex,
-                          groupValue: _selectedAnswers[_currentIndex],
-                          onChanged: (value) {
-                            _selectAnswer(value);
-                          },
-                          title: Text(
-                            currentQuestion.options[optionIndex],
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => _selectAnswer(optionIndex),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  selected
+                                      ? Icons.radio_button_checked_rounded
+                                      : Icons.radio_button_off_rounded,
+                                  color: selected
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).hintColor,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    currentQuestion.options[optionIndex],
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );

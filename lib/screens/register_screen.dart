@@ -202,6 +202,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           user,
           name: _usernameController.text.trim(),
         );
+        await FirestoreService.instance.startSession(user.uid);
       }
 
       if (!mounted) return;

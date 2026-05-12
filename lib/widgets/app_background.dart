@@ -11,9 +11,66 @@ class AppBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(gradient: AppTheme.backgroundGradient(context)),
-      child: child,
+      child: Stack(
+        children: [
+          Positioned(
+            top: -90,
+            right: -70,
+            child: _SoftCircle(
+              size: 210,
+              color: (isDark ? AppTheme.secondary : const Color(0xFF00B4D8))
+                  .withValues(alpha: isDark ? 0.16 : 0.18),
+            ),
+          ),
+          Positioned(
+            left: -80,
+            bottom: 80,
+            child: _SoftCircle(
+              size: 190,
+              color: (isDark ? AppTheme.accent : const Color(0xFFFFC857))
+                  .withValues(alpha: isDark ? 0.10 : 0.22),
+            ),
+          ),
+          Positioned(
+            right: 28,
+            bottom: -70,
+            child: _SoftCircle(
+              size: 160,
+              color: (isDark ? AppTheme.success : const Color(0xFF2BB673))
+                  .withValues(alpha: isDark ? 0.10 : 0.14),
+            ),
+          ),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _SoftCircle extends StatelessWidget {
+  final double size;
+  final Color color;
+
+  const _SoftCircle({
+    required this.size,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color,
+        ),
+      ),
     );
   }
 }

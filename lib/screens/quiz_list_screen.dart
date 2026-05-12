@@ -8,9 +8,9 @@ import '../models/quiz_subject.dart';
 import '../services/firestore_service.dart';
 import '../widgets/app_background.dart';
 import '../widgets/async_state.dart';
-import 'quiz_screen.dart';
+import 'quiz_setup_screen.dart';
 
-class QuizListScreen extends StatelessWidget {
+class QuizListScreen extends StatefulWidget {
   final Course course;
   final QuizSubject subject;
 
@@ -19,6 +19,20 @@ class QuizListScreen extends StatelessWidget {
     required this.course,
     required this.subject,
   });
+
+  @override
+  State<QuizListScreen> createState() => _QuizListScreenState();
+}
+
+class _QuizListScreenState extends State<QuizListScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,25 +51,49 @@ class QuizListScreen extends StatelessWidget {
                   icon: const Icon(Icons.arrow_back_ios_new_rounded),
                 ),
                 const SizedBox(height: 10),
-                Text(subject.title, style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 6),
-                Text('${course.title} quizzes'),
+                _QuizListHeader(course: widget.course, subject: widget.subject),
+                const SizedBox(height: 14),
+                _SearchField(
+                  controller: _searchController,
+                  hintText: 'Search quizzes',
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
+                ),
                 const SizedBox(height: 18),
                 Expanded(
                   child: StreamBuilder<List<Quiz>>(
-                    stream: FirestoreService.instance.quizzesForSubject(subject.id),
+                    stream: FirestoreService.instance.quizzesForSubject(
+                      widget.subject.id,
+                    ),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) return ErrorState(error: snapshot.error);
                       if (!snapshot.hasData) {
                         return const LoadingState(message: 'Loading quizzes...');
                       }
 
-                      final quizzes = snapshot.data!;
+                      final query = _searchQuery.trim().toLowerCase();
+                      final quizzes = snapshot.data!
+                          .where((quiz) => quiz.isPublished)
+                          .where(
+                            (quiz) => query.isEmpty
+                                ? true
+                                : quiz.title.toLowerCase().contains(query),
+                          )
+                          .toList();
                       if (quizzes.isEmpty) {
-                        return const EmptyState(
-                          icon: Icons.quiz_outlined,
-                          title: 'No quizzes yet',
-                          message: 'Add quizzes for this subject from Admin.',
+                        return EmptyState(
+                          icon: query.isEmpty
+                              ? Icons.quiz_outlined
+                              : Icons.search_off_rounded,
+                          title: query.isEmpty
+                              ? 'No published quizzes yet'
+                              : 'No quizzes found',
+                          message: query.isEmpty
+                              ? 'The admin has not published any quizzes for this subject yet.'
+                              : 'Try a different quiz name or keyword.',
                         );
                       }
 
@@ -81,10 +119,10 @@ class QuizListScreen extends StatelessWidget {
                                 onTap: () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => QuizScreen(
+                                    builder: (_) => QuizSetupScreen(
                                       quiz: quiz,
-                                      courseId: course.id,
-                                      subjectId: subject.id,
+                                      courseId: widget.course.id,
+                                      subjectId: widget.subject.id,
                                     ),
                                   ),
                                 ),
@@ -105,6 +143,94 @@ class QuizListScreen extends StatelessWidget {
   }
 }
 
+class _SearchField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final ValueChanged<String> onChanged;
+
+  const _SearchField({
+    required this.controller,
+    required this.hintText,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      onChanged: onChanged,
+      textInputAction: TextInputAction.search,
+      decoration: InputDecoration(
+        hintText: hintText,
+        prefixIcon: const Icon(Icons.search_rounded),
+        suffixIcon: controller.text.isEmpty
+            ? null
+            : IconButton(
+                tooltip: 'Clear search',
+                onPressed: () {
+                  controller.clear();
+                  onChanged('');
+                },
+                icon: const Icon(Icons.close_rounded),
+              ),
+      ),
+    );
+  }
+}
+
+class _QuizListHeader extends StatelessWidget {
+  final Course course;
+  final QuizSubject subject;
+
+  const _QuizListHeader({
+    required this.course,
+    required this.subject,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4361EE), Color(0xFF4CC9F0)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  subject.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '${course.title} quizzes',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+          Image.asset(
+            'assets/images/quiz_paper.png',
+            width: 76,
+            height: 76,
+            fit: BoxFit.contain,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _QuizTile extends StatelessWidget {
   final Quiz quiz;
   final bool hasProgress;
@@ -118,47 +244,117 @@ class _QuizTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final startsAt = quiz.startsAt;
+    final startLabel = startsAt == null
+        ? 'Starts anytime'
+        : quiz.hasStarted
+            ? 'Started'
+            : 'Starts ${startsAt.day.toString().padLeft(2, '0')}/${startsAt.month.toString().padLeft(2, '0')} ${startsAt.hour.toString().padLeft(2, '0')}:${startsAt.minute.toString().padLeft(2, '0')}';
+
     return Card(
       margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      quiz.title,
-                      style: Theme.of(context).textTheme.titleLarge,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                width: 6,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                      child: Icon(
+                        Icons.play_lesson_rounded,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        quiz.title,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
+                    if (hasProgress)
+                      Chip(
+                        label: const Text('Resume'),
+                        avatar: const Icon(Icons.play_circle_outline_rounded),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                  ],
+                ),
+                if (quiz.isAdminGenerated) ...[
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        'Generated by Admin',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ),
-                  if (hasProgress)
-                    Chip(
-                      label: const Text('Resume'),
-                      avatar: const Icon(Icons.play_circle_outline_rounded),
-                      visualDensity: VisualDensity.compact,
+                ],
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    _QuizMeta(
+                      icon: Icons.help_outline_rounded,
+                      text: '${quiz.totalQuestions} questions',
                     ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  _QuizMeta(
-                    icon: Icons.help_outline_rounded,
-                    text: '${quiz.totalQuestions} questions',
-                  ),
-                  const SizedBox(width: 14),
-                  _QuizMeta(
-                    icon: Icons.timer_outlined,
-                    text: '${quiz.duration} min',
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 14),
+                    _QuizMeta(
+                      icon: Icons.timer_outlined,
+                      text: '${quiz.duration} min',
+                    ),
+                    const SizedBox(width: 14),
+                    _QuizMeta(
+                      icon: quiz.requiresPassword
+                          ? Icons.lock_outline_rounded
+                          : Icons.lock_open_rounded,
+                      text: quiz.requiresPassword ? 'Password' : 'Open',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _QuizMeta(
+                      icon: quiz.hasStarted
+                          ? Icons.play_circle_outline_rounded
+                          : Icons.schedule_rounded,
+                      text: startLabel,
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.tune_rounded),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
